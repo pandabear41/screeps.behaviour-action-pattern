@@ -1,6 +1,5 @@
 var mod = {
     extend: function(){
-
         let Container = function(room){
             this.room = room;
 
@@ -205,11 +204,15 @@ var mod = {
                             this._repairable = _.sortBy(
                                 that.all.filter(
                                     structure => (
+                                        // is not at 100%
                                         structure.hits < structure.hitsMax &&
-                                        ( !that.room.my || structure.hits < MAX_REPAIR_LIMIT[that.room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (3*(DECAY_AMOUNT[structure.structureType] || 0)))) &&
+                                        // not owned room or hits below RCL repair limit
+                                        ( !that.room.my || structure.hits < MAX_REPAIR_LIMIT[that.room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (2*DECAY_AMOUNT[structure.structureType] || 0))) &&
+                                        // not decayable or below threshold
                                         ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) &&
-                                        ( structure.towers === undefined || structure.towers.length == 0) &&
+                                        // not pavement art
                                         ( Memory.pavementArt[that.room.name] === undefined || Memory.pavementArt[that.room.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') < 0 ) && 
+                                        // not flagged for removal
                                         ( !FlagDir.list.some(f => f.roomName == structure.pos.roomName && f.color == COLOR_ORANGE && f.x == structure.pos.x && f.y == structure.pos.y) )
                                     )
                                 ),
@@ -223,7 +226,7 @@ var mod = {
                     configurable: true,
                     get: function() {
                         if( _.isUndefined(this._urgentRepairableSites) ){
-                            var isUrgent = site => (site.hits < (LIMIT_URGENT_REPAIRING + (2*(DECAY_AMOUNT[site.structureType] || 0))));
+                            var isUrgent = site => (site.hits < (LIMIT_URGENT_REPAIRING + (DECAY_AMOUNT[site.structureType] || 0)));
                             this._urgentRepairableSites = _.filter(this.repairable, isUrgent);
                         }
                         return this._urgentRepairableSites;
@@ -468,7 +471,6 @@ var mod = {
                     return this._casualties;
                 }
             },
-
             'situation': {
                 configurable: true,
                 get: function() {
@@ -688,6 +690,64 @@ var mod = {
                     return this._my;
                 }
             },
+            'reserved': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._reserved) ) {
+                        if (this.controller) {
+                            const myName = _.find(Game.spawns).owner.username;
+                            this._reserved = this.controller.my || (this.controller.reservation
+                                && this.controller.reservation.username === myName);
+                        } else {
+                            this._reserved = false;
+                        }
+                    }
+                    return this._reserved;
+                },
+            },
+            'owner': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._owner)) {
+                        if (this.controller && this.controller.owner) {
+                            this._owner = this.controller.owner.username;
+                        } else {
+                            this._owner = false;
+                        }
+                    }
+                    return this._owner;
+                },
+            },
+            'reservation': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._reservation)) {
+                        if (this.controller && this.controller.reservation) {
+                            this._reservation = this.controller.reservation.username;
+                        } else {
+                            this._reservation = false;
+                        }
+                    }
+                    return this._reservation;
+                },
+            },
+            'ally': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._ally)) {
+                        if (this.controller) {
+                            const owner = this.owner;
+                            const reservation = this.reservation;
+                            this._ally = _.some(PLAYER_WHITELIST, function(player) {
+                                return player === owner || player === reservation;
+                            });
+                        } else {
+                            this._ally = false;
+                        }
+                    }
+                    return this._ally;
+                },
+            },
             'spawnQueueHigh': {
                 configurable: true,
                 get: function() {
@@ -797,7 +857,7 @@ var mod = {
             }
             let invalidObject = o => {
                 return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
-                    o.type == LOOK_CONSTRUCTION_SITES ||
+                    // o.type == LOOK_CONSTRUCTION_SITES ||
                     (o.type == LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType) ));
             };
             let isWalkable = (posX, posY) => look[posY][posX].filter(invalidObject).length == 0;
@@ -875,6 +935,7 @@ var mod = {
             let sites;
             if( filter ) sites = this.constructionSites.filter(filter);
             else sites = this.constructionSites;
+            if( sites.length == 0 ) return null;
             let siteOrder = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART];
             let rangeOrder = site => {
                 let order = siteOrder.indexOf(site.structureType); 
@@ -1209,31 +1270,37 @@ var mod = {
             this.memory.hostileIds = this.hostileIds;
         };
         Room.prototype.init = function(){
-            // required. otherwise the objects will keep the values. Which would be ok if reliable.
-            // but will be empty or "old" when redirected to an other server (load balancing), because it has its own cache
-            delete this._structures;
             delete this._sourceEnergyAvailable;
             delete this._droppedResources;
             delete this._ticksToNextRegeneration;
             delete this._relativeEnergyAvailable;
             delete this._towerFreeCapacity;
-            delete this._constructionSites;
             delete this._hostiles;
             delete this._hostileIds;
             delete this._situation;
-            delete this._maxPerJob;
-            delete this._creeps
             delete this._casualties;
+            delete this._currentCostMatrix;
+            delete this._isReceivingEnergy;
+            delete this._reservedSpawnEnergy;
+            delete this._creeps
             delete this._privateerMaxWeight;
             delete this._claimerMaxWeight;
             delete this._combatCreeps;
             delete this._defenseLevel;
             delete this._hostileThreatLevel;
-            delete this._minerals;
-            delete this._currentCostMatrix;
-            delete this._my;
-            delete this._isReceivingEnergy;
-            delete this._reservedSpawnEnergy;
+            if( Game.cacheTime !== Game.time-1 || Game.time - Game.lastServerSwitch > 50 ) {
+                delete this._my;
+                delete this._constructionSites;
+                delete this._maxPerJob;
+                delete this._minerals;
+                delete this._structures;
+                Game.lastServerSwitch = Game.time;
+            } else {
+                delete this.structures._repairable;
+                delete this.structures._urgentRepairableSites;
+                delete this.structures._fortifyableSites;
+                delete this.structures._fuelables;
+            }
         };
 
         Room.processSightlessRoom = function(roomName, memory){
