@@ -15,6 +15,11 @@ module.exports = {
         } else {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
+        if( creep.hits < creep.hitsMax ) { // creep injured. move to next owned room
+            let nextHome = Room.bestSpawnRoomFor(creep.pos.roomName);
+            if( nextHome )
+                creep.drive( nextHome.controller.pos, 3, 5);
+        }
     },
     nextAction: function(creep){
         let carrySum = creep.sum;
@@ -99,7 +104,7 @@ module.exports = {
                 }
                 // carrier full
                 else {
-                    var actions = [Creep.action.repairing, Creep.action.building];
+                    var actions = [Creep.action.building];
                     for(var iAction = 0; iAction < actions.length; iAction++) {
                         var action = actions[iAction];
                         if(action.isValidAction(creep) &&

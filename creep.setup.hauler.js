@@ -11,12 +11,27 @@ setup.maxMulti = function(room) {
     return Math.min(max, 16);
 };
 setup.maxCount = function(room){
+    if( !room.population ) return 0;
     let count = 0;
-    if(room.population && room.population.typeCount['miner'] > 0) {
+    let miners = (room.population.typeCount['miner']||0);
+    let workers = (room.population.typeCount['worker']||0);
+    let cont = room.structures.container.in.length + room.structures.links.storage.length;
+    if( miners > 0  || ( cont > 0 && workers > 2 )) {
         count += Creep.setup.upgrader.maxCount(room);
         if( room.structures.links.all.length < 3 ||
            (room.storage && room.storage.store.energy > MAX_STORAGE_ENERGY[room.controller.level] &&
             room.structures.container.controller && _.sum(room.structures.container.controller, 'store.energy') == 0 )) count++;
+        /* Add hauler when there is energy on the ground
+        let dropped = 0;
+        let isSource = pos => room.sources.some(s => s.pos.x === pos.x && s.pos.y === pos.y);
+        let countNearSource = resource => {
+            if( resource.resourceType === RESOURCE_ENERGY ) {
+                if( resource.pos.adjacent.some(isSource) ) dropped += resource.amount;
+            }
+        };
+        room.droppedResources.forEach(countNearSource);
+        if(room.storage && dropped > 1000) count++;
+        */
         if( count == 0 ) count = 1;
     }
     return count;
@@ -27,7 +42,7 @@ setup.maxWeight = function(room){
 setup.default = {
     fixedBody: [WORK],
     multiBody: [CARRY, CARRY, MOVE],
-    minAbsEnergyAvailable: 150,
+    minAbsEnergyAvailable: 250,
     minEnergyAvailable: 0.4,
     maxMulti: setup.maxMulti,
     maxCount: setup.maxCount,

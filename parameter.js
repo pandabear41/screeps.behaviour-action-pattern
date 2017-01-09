@@ -8,14 +8,20 @@ var mod = {
     CENSUS_ANNOUNCEMENTS: true, // log birth and death
     SELL_NOTIFICATION: true, // send mail when selling minerals
     SPAWN_INTERVAL: 5, // loops between regular spawn probe
-    MAX_STORAGE_ENERGY: { // stop storing energy when reached
+    MAX_STORAGE_ENERGY: { // get rid of energy when reached
+        1: 2000,
+        2: 2000,
+        3: 2000,
         4: 5000,
-        5: 50000,
-        6: 100000,
-        7: 200000,
+        5: 10000,
+        6: 25000,
+        7: 50000,
         8: 300000
     },
     MIN_STORAGE_ENERGY: { // prefer storing energy until reached
+        1: 1000,
+        2: 1000,
+        3: 1000,
         4: 1000,
         5: 5000,
         6: 10000,
@@ -78,7 +84,8 @@ var mod = {
     COST_MATRIX_VALIDITY: 1000,
     CONTROLLER_SIGN: false,
     CONTROLLER_SIGN_MESSAGE: "Territory of the Open Collaboration Society! (https://github.com/ScreepsOCS)",
-    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','FaceWound','forkmantis','Migaaresno','xAix1999','silentpoots','arguinyano','OokieCookie','OverlordQ','Nibinhilion','Crowsbane','Yew','BogdanBiv','s1akr','Pandabear41','Logmadr','Patrik','novice','Conquest','ofirl','GeorgeBerkeley','TTR','tynstar','K-C','Hoekynl']
+    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','FaceWound','forkmantis','Migaaresno','xAix1999','silentpoots','arguinyano','OokieCookie','OverlordQ','Nibinhilion','Crowsbane','Yew','BogdanBiv','s1akr','Pandabear41','Logmadr','Patrik','novice','Conquest','ofirl','GeorgeBerkeley','TTR','tynstar','K-C','Hoekynl'],
     // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
+    DEFENSE_BLACKLIST: [] // Don't defend those rooms (add room names). Blocks spawning via defense task (will not prevent offensive actions at all)
 }
 module.exports = mod;

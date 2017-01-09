@@ -1,4 +1,7 @@
 var mod = {
+    custom: function(){
+        //console.log('base');
+    },
     init: function(params){
         // Load extension functions
         Creep.extend = load("creep").extend;
@@ -243,6 +246,7 @@ var mod = {
             // respecting environmental walls
             // uses memory to cache for ever
             routeRange: function(fromRoom, toRoom){
+                if( fromRoom === toRoom ) return 0;
                 if( _.isUndefined(Memory.routeRange) ){
                     Memory.routeRange = {};
                 }
@@ -288,4 +292,4 @@ var mod = {
         });
     }
 }
-module.exports = mod;
+module.exports = _.bindAll(mod);

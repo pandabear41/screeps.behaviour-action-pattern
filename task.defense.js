@@ -11,11 +11,22 @@ module.exports = {
     },
     // When a new invader has been spotted
     handleNewInvader: invaderCreep => {
+        // ignore if on blacklist
+        if( DEFENSE_BLACKLIST.includes(invaderCreep.pos.roomName) ) return;
+        // if not our room and not our reservation
+        if( !invaderCreep.room.my && !invaderCreep.room.reserved ) {
+            // if it is not our exploiting target
+            let validColor = flagEntry => (
+                (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor) ||
+                (flagEntry.color == FLAG_COLOR.claim.color && flagEntry.secondaryColor == FLAG_COLOR.claim.secondaryColor) ||
+                (flagEntry.color == FLAG_COLOR.claim.reserve.color && flagEntry.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor) 
+            );
+            let flag = FlagDir.find(validColor, invaderCreep.pos, true);
+            if( !flag )
+                return; // ignore invader
+        } 
         // check room threat balance
-        if( !invaderCreep.room.controller ) {
-            // not buildable room, don't defend it automatically
-            return;
-        } else if( invaderCreep.room.defenseLevel.sum > invaderCreep.room.hostileThreatLevel ) {
+        if( invaderCreep.room.defenseLevel.sum > invaderCreep.room.hostileThreatLevel ) {
             // room can handle that
             return;
         } else {
@@ -92,7 +103,7 @@ module.exports = {
         // analyze invader threat and create something bigger
         while( remainingThreat > 0 ){
             // get spawning room and calculate defense creep
-            let room = Game.rooms[Room.bestSpawnRoomFor(invaderCreep.pos.roomName)];
+            let room = Room.bestSpawnRoomFor(invaderCreep.pos.roomName);
             let fixedBody = [RANGED_ATTACK, MOVE];
             let multiBody = [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE];
             let name = 'ranger-def';

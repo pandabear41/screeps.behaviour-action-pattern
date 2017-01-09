@@ -735,7 +735,9 @@ var mod = {
                 configurable: true,
                 get: function () {
                     if (_.isUndefined(this._ally)) {
-                        if (this.controller) {
+                        if (this.reserved) {
+                            this._ally = true;
+                        } else if (this.controller) {
                             const owner = this.owner;
                             const reservation = this.reservation;
                             this._ally = _.some(PLAYER_WHITELIST, function(player) {
@@ -787,10 +789,8 @@ var mod = {
         });
 
         Room.bestSpawnRoomFor = function(targetRoomName) {
-            var range = spawn => routeRange(spawn.pos.roomName, targetRoomName);
-            let spawn = _.min(Game.spawns, range);
-
-            return spawn.pos.roomName;
+            var range = room => room.my ? routeRange(room.name, targetRoomName) : Infinity;
+            return _.min(Game.rooms, range);
         }
         Room.getCostMatrix = function(roomName) {
             var room = Game.rooms[roomName];
@@ -939,8 +939,9 @@ var mod = {
             let siteOrder = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART];
             let rangeOrder = site => {
                 let order = siteOrder.indexOf(site.structureType); 
-                if( order < 0 ) return 100000 + pos.getRangeTo(site);
-                return ((order - (site.progress / site.progressTotal)) * 100) + pos.getRangeTo(site);
+                return pos.getRangeTo(site) + ( order < 0 ? 100000 : (order * 100) );
+                //if( order < 0 ) return 100000 + pos.getRangeTo(site);
+                //return ((order - (site.progress / site.progressTotal)) * 100) + pos.getRangeTo(site);
             };
             return _.min(sites, rangeOrder);
         };
@@ -1348,4 +1349,4 @@ var mod = {
     }
 }
 
-module.exports = mod;
+module.exports = _.bindAll(mod);
