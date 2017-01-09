@@ -2,11 +2,13 @@ var mod = {
     // load all task modules
     guard: load("task.guard"),
     defense: load("task.defense"),
+    mining: load("task.mining"),
     // register tasks (hook up into events)
     register: function () {
         let tasks = [
             Task.guard, 
-            Task.defense
+            Task.defense,
+            Task.mining
         ];
         var loop = task => {
             task.register();
