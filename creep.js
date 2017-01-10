@@ -28,6 +28,9 @@ var mod = {
             reallocating:load("creep.action.reallocating"),
             recycling:load("creep.action.recycling")
         };
+        for (const action in Creep.action) {
+            if (Creep.action[action].register) Creep.action[action].register(this);
+        }
         Creep.behaviour = {
             claimer: load("creep.behaviour.claimer"),
             hauler: load("creep.behaviour.hauler"),
@@ -41,6 +44,9 @@ var mod = {
             upgrader: load("creep.behaviour.upgrader"),
             worker: load("creep.behaviour.worker")
         };
+        for (const behaviour in Creep.behaviour) {
+            if (Creep.behaviour[behaviour].register) Creep.behaviour[behaviour].register(this);
+        }
         Creep.setup = {
             claimer: load("creep.setup.claimer"),
             hauler: load("creep.setup.hauler"),
@@ -54,6 +60,9 @@ var mod = {
             upgrader: load("creep.setup.upgrader"),
             worker: load("creep.setup.worker")
         };
+        for (const setup in Creep.setup) {
+            if (Creep.setup[setup].register) Creep.setup[setup].register(this);
+        }
         Creep.loop = function(){
             var run = creep => creep.run();
             _.forEach(Game.creeps, run);
@@ -422,6 +431,21 @@ var mod = {
                 }
             }
         });
+
+        Creep.prototype.onError = function(tryAction, tryTarget, workResult) {
+            debugger;
+            if (this.resolvingError) return;
+
+            this.resolvingError = tryAction;
+            Creep.actionError.trigger({creep: this, tryAction, tryTarget, workResult});
+
+            if (this.resolvingError) {
+                if (DEBUG) logErrorCode(this, workResult);
+                delete this.data.actionName;
+                delete this.data.targetId;
+                delete this.resolvingError;
+            }
+        };
     }
 }
 
