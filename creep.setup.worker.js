@@ -25,7 +25,8 @@ setup.RCL = {
         minEnergyAvailable: 0,
         maxMulti: 8,
         maxCount: room => ( room.situation.invasion ) ? 1 : 4,
-        maxWeight: 4000
+        maxWeight: 4000,
+        highPriority: 100,
     },
     2: {
         fixedBody: [],
@@ -34,7 +35,8 @@ setup.RCL = {
         minEnergyAvailable: 0,
         maxMulti: 8,
         maxCount: room => ( room.situation.invasion ) ? 1 : 6,
-        maxWeight: 14400
+        maxWeight: 14400,
+        highPriority: 100,
     },
     3: {
         fixedBody: [],
@@ -43,7 +45,8 @@ setup.RCL = {
         minEnergyAvailable: room => setup.hasMinerOrHauler(room) ? 0.3 : 0,
         maxMulti: 8,
         maxCount: room => ( room.situation.invasion ) ? 1 : 4,
-        maxWeight: 9600
+        maxWeight: 9600,
+        highPriority: 100,
     },
     4: {
         fixedBody: [],
@@ -52,7 +55,8 @@ setup.RCL = {
         minEnergyAvailable: room => setup.hasMinerOrHauler(room) ? 0.3 : 0,
         maxMulti: 8,
         maxCount: (room) => ( room.situation.invasion || room.storage ) ? setup.maxWorker(room) : 2,
-        maxWeight: 4800
+        maxWeight: 4800,
+        highPriority: 100,
     },
     5: {
         fixedBody: [],
@@ -61,7 +65,8 @@ setup.RCL = {
         minEnergyAvailable: room => setup.hasMinerOrHauler(room) ? 0.3 : 0,
         maxMulti: 8,
         maxCount: room => setup.maxWorker(room),
-        maxWeight: 2000
+        maxWeight: 2000,
+        highPriority: 100,
     },
     6: {
         fixedBody: [],
@@ -70,7 +75,8 @@ setup.RCL = {
         minEnergyAvailable: room => setup.hasMinerOrHauler(room) ? 0.3 : 0,
         maxMulti: 8,
         maxCount: room => setup.maxWorker(room),
-        maxWeight: 2000
+        maxWeight: 2000,
+        highPriority: 100,
     },
     7: {
         fixedBody: [],
@@ -79,7 +85,8 @@ setup.RCL = {
         minEnergyAvailable: room => setup.hasMinerOrHauler(room) ? 0.2 : 0,
         maxMulti: 10,
         maxCount: room => setup.maxWorker(room),
-        maxWeight: 2000
+        maxWeight: 2000,
+        highPriority: 100,
     },
     8: {
         fixedBody: [],
@@ -88,7 +95,8 @@ setup.RCL = {
         minEnergyAvailable: room => setup.hasMinerOrHauler(room) ? 0.1 : 0,
         maxMulti: room => (( !room.storage || room.storage.energy > MAX_STORAGE_ENERGY[8] ) ? 16 : 10),
         maxCount: room => setup.maxWorker(room),
-        maxWeight: 3200
+        maxWeight: 3200,
+        highPriority: 100,
     }
 };
 module.exports = setup;
