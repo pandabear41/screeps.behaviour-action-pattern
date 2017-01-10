@@ -39,7 +39,7 @@ var mod = {
                 parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
                 name: name,
                 behaviour: 'claimer',
-            //    setup: 'claimer',
+                setup: 'claimer',
                 destiny: { task: "claim", flagName: flag.name }
             };
             if( creep.parts.length === 0 ) {
@@ -165,12 +165,6 @@ var mod = {
                 action.assign(creep)) {
                     return;
             }
-        }
-
-        // recycle self
-        let mother = Game.spawns[creep.data.motherSpawn];
-        if( mother ) {
-            Creep.action.recycling.assign(creep, mother);
         }
     }
 

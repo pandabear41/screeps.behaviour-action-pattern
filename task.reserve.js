@@ -18,8 +18,10 @@ module.exports = {
         // if it is a reserve, exploit or remote mine flag
         if( flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor ||
             flag.color == FLAG_COLOR.invade.exploit.color && flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor){
+            // flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor
+
             // check if a new creep has to be spawned
-            //TODO - Only spawn if controller is below 2000 ticks (target.reservation.ticksToEnd < 4999)
+            
             Task.reserve.checkForRequiredCreeps(flag);
         }
     },
@@ -28,20 +30,21 @@ module.exports = {
         // get task memory
         let memory = Task.reserve.memory(flag);
         // count creeps assigned to task
-        let count = memory.queued.length + memory.spawning.length + memory.running.length;
-        // if creep count below requirement spawn a new creep creep
+        //TODO - Only spawn if controller is below 2000 ticks (target.reservation.ticksToEnd < 4999)
+        let count = memory.queued.length + memory.spawning.length + memory.running.length;// + ((flag) => ( flag.room.controller.reservation.ticksToEnd < 2000 ) ? 0 : 1);
+        // if creep count below requirement spawn a new creep creep 
         if( count < 1 ) {
             // get nearest room
             let room = Room.bestSpawnRoomFor(flag.pos.roomName);
             // define new creep
             let fixedBody = [CLAIM, MOVE, CLAIM, MOVE];
-            let multiBody = [];
-            let name = 'Reserve-' + flag.pos.roomName;
+            let multiBody = [CLAIM, MOVE];
+            let name = 'reserve-' + flag.pos.roomName;
             let creep = {
                 parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
                 name: name,
                 behaviour: 'claimer',
-                //setup: 'claimer',
+                setup: 'claimer',
                 destiny: { task: "reserve", flagName: flag.name }
             };
             if( creep.parts.length === 0 ) {
@@ -129,7 +132,7 @@ module.exports = {
                 let creep = Game.creeps[o];
                 // invalidate old creeps for predicted spawning
                 // TODO: better distance calculation
-                if( creep && creep.name != name && creep.data !== undefined && creep.data.spawningTime !== undefined && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*20) ) ) {
+                if( creep && creep.name != name && creep.data !== undefined && creep.data.spawningTime !== undefined && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*25) ) ) {
                     running.push(o);
                 }
             };
@@ -151,7 +154,6 @@ module.exports = {
         return flag.memory.tasks.reserve;
     },
 
-
     nextAction: creep => {
         // override behaviours nextAction function
         // this could be a global approach to manipulate creep behaviour
@@ -161,7 +163,7 @@ module.exports = {
             Creep.action.reserving,
             Creep.action.recycling
         ];
-
+      //  console.log("bingo")
         for(var iAction = 0; iAction < priority.length; iAction++) {
             var action = priority[iAction];
             if(action.isValidAction(creep) &&
