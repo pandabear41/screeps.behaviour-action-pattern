@@ -15,9 +15,10 @@ var mod = {
     },
     // for each flag
     handleFlagFound: flag => {
-        // if it is a yellow/yellow flag
+        // if it is a reserve, exploit or remote mine flag
         if( flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor ){
             // check if a new creep has to be spawned
+            //TODO - Only spawn if controller is below 2000 ticks (target.reservation.ticksToEnd < 4999)
             Task.reserve.checkForRequiredCreeps(flag);
         }
     },
