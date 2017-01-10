@@ -14,7 +14,7 @@ module.exports = {
         // ignore if on blacklist
         if( DEFENSE_BLACKLIST.includes(invaderCreep.pos.roomName) ) return;
         // if not our room and not our reservation
-        console.log( if( !invaderCreep.room.my && !invaderCreep.room.reserved)); // check when true
+        console.log("This should be True: " + if( !invaderCreep.room.my && !invaderCreep.room.reserved)); // check when true
         if( !invaderCreep.room.my && !invaderCreep.room.reserved ) {
             // if it is not our exploiting target
             let validColor = flagEntry => (
