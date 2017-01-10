@@ -38,7 +38,8 @@ var mod = {
             let creep = {
                 parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
                 name: name,
-                setup: 'claimer',
+                behaviour: 'claimer',
+            //    setup: 'claimer',
                 destiny: { task: "claim", flagName: flag.name }
             };
             if( creep.parts.length === 0 ) {
@@ -146,7 +147,33 @@ var mod = {
             }
         }
         return flag.memory.tasks.claim;
+    },
+
+    nextAction: creep => {
+        // override behaviours nextAction function
+        // this could be a global approach to manipulate creep behaviour
+
+        //Claim - once claimed, recycle 
+        let priority = [
+            Creep.action.claiming,
+            Creep.action.recycling
+        ];
+        for(var iAction = 0; iAction < priority.length; iAction++) {
+            var action = priority[iAction];
+            if(action.isValidAction(creep) &&
+                action.isAddableAction(creep) &&
+                action.assign(creep)) {
+                    return;
+            }
+        }
+
+        // recycle self
+        let mother = Game.spawns[creep.data.motherSpawn];
+        if( mother ) {
+            Creep.action.recycling.assign(creep, mother);
+        }
     }
+
 };
 
 module.exports = mod; 

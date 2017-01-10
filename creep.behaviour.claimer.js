@@ -22,8 +22,21 @@ module.exports = {
         }
     },
     nextAction: function(creep){
+      
+/*
+        if( creep.data.destiny.task = 'claim') {
+            Creep.action.claiming
+        }
+
+        if( creep.data.destiny.task = 'reserve') {
+            Creep.action.reserving
+        }   else  {
+            logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
+        }
+
+            */
         let priority = [
-            Creep.action.claiming,
+         //  Creep.action.claiming,
             Creep.action.reserving,
             Creep.action.idle
         ];
@@ -34,6 +47,6 @@ module.exports = {
                 action.assign(creep)) {
                     return;
             }
-        }
+        } 
     }
 }

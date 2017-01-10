@@ -1,5 +1,5 @@
 // This task will react on exploit, reserve and remotemine flags, sending a reserving creep to the flags position.
-var mod = {
+module.exports = {
     // hook into events
     register: () => {
         // when a new flag has been found (occurs every tick, for each flag)
@@ -16,7 +16,8 @@ var mod = {
     // for each flag
     handleFlagFound: flag => {
         // if it is a reserve, exploit or remote mine flag
-        if( flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor ){
+        if( flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor ||
+            flag.color == FLAG_COLOR.invade.exploit.color && flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor){
             // check if a new creep has to be spawned
             //TODO - Only spawn if controller is below 2000 ticks (target.reservation.ticksToEnd < 4999)
             Task.reserve.checkForRequiredCreeps(flag);
@@ -39,7 +40,8 @@ var mod = {
             let creep = {
                 parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
                 name: name,
-                setup: 'claimer',
+                behaviour: 'claimer',
+                //setup: 'claimer',
                 destiny: { task: "reserve", flagName: flag.name }
             };
             if( creep.parts.length === 0 ) {
@@ -48,7 +50,7 @@ var mod = {
                 return;
             }
             // queue creep for spawning
-            room.spawnQueueHigh.push(creep);
+            room.spawnQueueLow.push(creep);
             // save queued creep to task memory
             memory.queued.push({
                 room: room.name,
@@ -72,7 +74,7 @@ var mod = {
             let queued = []
             let validateQueued = o => {
                 let room = Game.rooms[o.room];
-                if(room.spawnQueueHigh.some( c => c.name == o.name)){
+                if(room.spawnQueueLow.some( c => c.name == o.name)){
                     queued.push(o);
                 }
             };
@@ -127,7 +129,7 @@ var mod = {
                 let creep = Game.creeps[o];
                 // invalidate old creeps for predicted spawning
                 // TODO: better distance calculation
-                if( creep && creep.name != name && creep.data !== undefined && creep.data.spawningTime !== undefined && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50) ) ) {
+                if( creep && creep.name != name && creep.data !== undefined && creep.data.spawningTime !== undefined && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*20) ) ) {
                     running.push(o);
                 }
             };
@@ -147,7 +149,30 @@ var mod = {
             }
         }
         return flag.memory.tasks.reserve;
+    },
+
+
+    nextAction: creep => {
+        // override behaviours nextAction function
+        // this could be a global approach to manipulate creep behaviour
+
+        //Reserve if possible, if not (should be never) then recycle
+        let priority = [
+            Creep.action.reserving,
+            Creep.action.recycling
+        ];
+
+        for(var iAction = 0; iAction < priority.length; iAction++) {
+            var action = priority[iAction];
+            if(action.isValidAction(creep) &&
+                action.isAddableAction(creep) &&
+                action.assign(creep)) {
+                    return;
+            }
+        }
     }
+ 
+
 };
 
-module.exports = mod; 
+
