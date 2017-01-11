@@ -433,7 +433,6 @@ var mod = {
         });
 
         Creep.prototype.onError = function(tryAction, tryTarget, workResult) {
-            debugger;
             if (this.resolvingError) return;
 
             this.resolvingError = tryAction;
