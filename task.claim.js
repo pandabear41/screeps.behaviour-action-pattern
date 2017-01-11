@@ -1,4 +1,4 @@
-// This task will react on white/blue flags, sending a claiming creep to the flags position.
+// This task will react on claim flags (Green/Green), sending a claiming creep to the flags position.
 var mod = {
     // hook into events
     register: () => {
